@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import { Vector3 } from 'three';
 import { CharacterData } from '../store';
-import { Text } from '@react-three/drei';
+import { CharacterModel } from './CharacterModel';
 
 interface NPCProps {
   data: CharacterData;
@@ -54,34 +54,11 @@ export const NPC = ({ data, position = [0, 5, 0] }: NPCProps) => {
   return (
     <RigidBody ref={rigidBody} colliders={false} type="dynamic" position={position} enabledRotations={[false, false, false]} linearDamping={0.5}>
       <CapsuleCollider args={[0.5, 0.3]} />
-      <group>
-        {/* Name Tag */}
-        <Text position={[0, 1.5, 0]} fontSize={0.2} color="black" anchorX="center" anchorY="middle">
-          {data.name}
-        </Text>
-
-        {/* Body */}
-        <mesh castShadow position={[0, 0, 0]}>
-          <capsuleGeometry args={[0.3, 1, 4, 8]} />
-          <meshStandardMaterial color={data.bodyColor} />
-        </mesh>
-
-        {/* Accessory: Hat */}
-        {data.accessory === 'hat' && (
-          <mesh position={[0, 0.6, 0]}>
-            <coneGeometry args={[0.4, 0.5, 32]} />
-            <meshStandardMaterial color="purple" />
-          </mesh>
-        )}
-
-        {/* Accessory: Glasses */}
-        {data.accessory === 'glasses' && (
-          <mesh position={[0, 0.3, 0.25]}>
-            <boxGeometry args={[0.4, 0.1, 0.1]} />
-            <meshStandardMaterial color="black" />
-          </mesh>
-        )}
-      </group>
+      <CharacterModel
+        name={data.name}
+        bodyColor={data.bodyColor}
+        accessory={data.accessory}
+      />
     </RigidBody>
   );
 };
