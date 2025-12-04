@@ -4,6 +4,7 @@ export interface CharacterData {
   id: string;
   name: string;
   bodyColor: string;
+  eyeColor: string;
   accessory: 'none' | 'hat' | 'glasses';
 }
 

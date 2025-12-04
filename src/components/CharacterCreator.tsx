@@ -1,91 +1,189 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Html } from '@react-three/drei';
 import { useStore } from '../store';
+import { CharacterModel } from './CharacterModel';
 
-export const CharacterCreator = () => {
+export const CharacterCreator = (props: any) => {
   const { isCreatorOpen, closeCreator, addNPC } = useStore();
   const [name, setName] = useState('New Employee');
   const [bodyColor, setBodyColor] = useState('#ffeb3b');
+  const [eyeColor, setEyeColor] = useState('black');
   const [accessory, setAccessory] = useState<'none' | 'hat' | 'glasses'>('none');
+
+  // Reset or initialize when opening
+  useEffect(() => {
+      if(isCreatorOpen) {
+          // Reset logic if needed
+      }
+  }, [isCreatorOpen]);
 
   if (!isCreatorOpen) return null;
 
   return (
-    <Html center>
-      <div style={{
-        background: 'white',
-        padding: '20px',
-        borderRadius: '10px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        width: '300px',
-        fontFamily: 'Arial, sans-serif'
-      }}>
-        <h2 style={{ margin: '0 0 15px 0', color: '#333' }}>New Hire Onboarding</h2>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ width: '100%', padding: '5px' }}
+    <group {...props}>
+      {/* Preview Character - Facing the Camera (World +X) */}
+      {/* Creator is rotated 90 deg Y. Local +Z is World +X. */}
+      {/* So no rotation needed on the group to face +X. */}
+      <group position={[0, -1.5, 1]} rotation={[0, 0, 0]}>
+          <CharacterModel
+            bodyColor={bodyColor}
+            eyeColor={eyeColor}
+            accessory={accessory}
           />
-        </div>
+           {/* Spotlight for the character */}
+           <spotLight position={[0, 5, 2]} intensity={2} angle={0.5} penumbra={1} castShadow />
+      </group>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Outfit Color</label>
-          <input
-            type="color"
-            value={bodyColor}
-            onChange={(e) => setBodyColor(e.target.value)}
-            style={{ width: '100%' }}
-          />
-        </div>
+      {/* UI Panel */}
+      <Html transform position={[1.6, 0, 0]} scale={0.2} occlude={false}>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          padding: '30px',
+          borderRadius: '20px',
+          boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+          width: '400px',
+          fontFamily: "'Inter', sans-serif",
+          userSelect: 'none',
+          pointerEvents: 'auto'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ margin: 0, color: '#333', fontSize: '24px' }}>Customize</h2>
+            <button
+                onClick={closeCreator}
+                style={{ background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#999' }}
+            >
+                ✕
+            </button>
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Accessory</label>
-          <select
-            value={accessory}
-            onChange={(e) => setAccessory(e.target.value as any)}
-            style={{ width: '100%', padding: '5px' }}
-          >
-            <option value="none">None</option>
-            <option value="hat">Party Hat</option>
-            <option value="glasses">Smart Glasses</option>
-          </select>
-        </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #ddd',
+                  fontSize: '16px'
+              }}
+            />
+          </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Outfit Color</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                {['#ffeb3b', '#4caf50', '#2196f3', '#9c27b0', '#f44336', '#ff9800', '#795548', '#607d8b'].map(color => (
+                    <div
+                        key={color}
+                        onClick={() => setBodyColor(color)}
+                        style={{
+                            width: '30px',
+                            height: '30px',
+                            borderRadius: '50%',
+                            backgroundColor: color,
+                            cursor: 'pointer',
+                            border: bodyColor === color ? '3px solid #333' : '3px solid transparent',
+                            transition: 'all 0.2s'
+                        }}
+                    />
+                ))}
+                 <input
+                    type="color"
+                    value={bodyColor}
+                    onChange={(e) => setBodyColor(e.target.value)}
+                    style={{ width: '30px', height: '30px', padding: 0, border: 'none', background: 'none' }}
+                />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Eye Color</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                {['black', '#795548', '#2196f3', '#4caf50', 'red'].map(color => (
+                    <div
+                        key={color}
+                        onClick={() => setEyeColor(color)}
+                        style={{
+                            width: '30px',
+                            height: '30px',
+                            borderRadius: '50%',
+                            backgroundColor: color,
+                            cursor: 'pointer',
+                            border: eyeColor === color ? '3px solid #333' : '3px solid transparent',
+                            transition: 'all 0.2s'
+                        }}
+                    />
+                ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '25px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#555' }}>Accessory</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                    onClick={() => setAccessory('none')}
+                    style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: accessory === 'none' ? '2px solid #333' : '1px solid #ddd',
+                        background: accessory === 'none' ? '#eee' : 'white',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    None
+                </button>
+                <button
+                    onClick={() => setAccessory('hat')}
+                    style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: accessory === 'hat' ? '2px solid #333' : '1px solid #ddd',
+                        background: accessory === 'hat' ? '#eee' : 'white',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Hat
+                </button>
+                <button
+                    onClick={() => setAccessory('glasses')}
+                    style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: accessory === 'glasses' ? '2px solid #333' : '1px solid #ddd',
+                        background: accessory === 'glasses' ? '#eee' : 'white',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Glasses
+                </button>
+            </div>
+          </div>
+
           <button
-            onClick={() => addNPC({ name, bodyColor, accessory })}
+            onClick={() => addNPC({ name, bodyColor, eyeColor, accessory })}
             style={{
-              flex: 1,
-              padding: '10px',
-              background: '#4CAF50',
+              width: '100%',
+              padding: '15px',
+              background: '#2196f3',
               color: 'white',
               border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
+              borderRadius: '10px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 4px 10px rgba(33, 150, 243, 0.3)'
             }}
           >
-            Save & Join
-          </button>
-          <button
-            onClick={closeCreator}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: '#f44336',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}
-          >
-            Cancel
+            Join Office
           </button>
         </div>
-      </div>
-    </Html>
+      </Html>
+    </group>
   );
 };
