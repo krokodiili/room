@@ -3,17 +3,19 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import { Vector3 } from 'three';
 import { useKeyboardControls } from '@react-three/drei';
+import { useStore } from '../store';
 
 export const CharacterController = (props: any) => {
   const { camera } = useThree();
   const rigidBody = useRef<RapierRigidBody>(null);
   const [, get] = useKeyboardControls();
+  const isCreatorOpen = useStore((state) => state.isCreatorOpen);
 
   // Default spawn position if not provided
   const spawnPos = props.position || [0, 5, 0];
 
   useFrame(() => {
-    if (!rigidBody.current) return;
+    if (!rigidBody.current || isCreatorOpen) return;
 
     const { forward, backward, left, right, jump } = get();
 

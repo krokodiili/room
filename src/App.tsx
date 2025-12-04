@@ -1,9 +1,9 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Sky, PointerLockControls, KeyboardControls, Environment } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
 import { CharacterController } from './components/CharacterController';
 import { CharacterCreator } from './components/CharacterCreator';
-import { Kiosk } from './components/Kiosk';
+import { Mirror } from './components/Mirror';
 import { Desk } from './components/Desk';
 import { Chair } from './components/Chair';
 import { Plant } from './components/Plant';
@@ -12,6 +12,7 @@ import { Decor } from './components/Decor';
 import { NPC } from './components/NPC';
 import { useStore } from './store';
 import { Suspense, useEffect } from 'react';
+import { Vector3 } from 'three';
 
 // Define keyboard map
 const keyboardMap = [
@@ -22,8 +23,24 @@ const keyboardMap = [
   { name: 'jump', keys: ['Space'] },
 ];
 
+function CreatorCamera() {
+    const { camera } = useThree();
+
+    useFrame(() => {
+        // Smoothly interpolate camera to the creator view
+        // Target: x=-6, y=2, z=0. Look at -9.7, 2, 0 (Mirror position)
+        const targetPos = new Vector3(-6, 2, 0);
+        const lookAtPos = new Vector3(-9.7, 2, 0);
+
+        camera.position.lerp(targetPos, 0.1);
+        camera.lookAt(lookAtPos);
+    });
+    return null;
+}
+
 function Scene() {
   const npcs = useStore((state) => state.npcs);
+  const isCreatorOpen = useStore((state) => state.isCreatorOpen);
 
   return (
     <>
@@ -46,27 +63,23 @@ function Scene() {
         {/* Player Controller - Spawn near the entrance */}
         <CharacterController position={[0, 5, 8]} />
 
-        {/* Kiosk - Center Feature */}
-        <Kiosk position={[0, 0, -2]} />
+        {/* Mirror Station - Left Wall */}
+        {/* Left wall surface is at x = -9.75. We place the mirror at -9.7 so it sits on the wall */}
+        <Mirror position={[-9.7, 2, 0]} rotation={[0, Math.PI / 2, 0]} />
 
-        {/* Work Zone - Left */}
+        {/* Character Creator UI & Preview - Positioned at the same location as Mirror for relative placement */}
+        <CharacterCreator position={[-9.7, 2, 0]} rotation={[0, Math.PI / 2, 0]} />
+
+        {/* Work Zone - Left (Adjusted to avoid Mirror) */}
         <group position={[-6, 0, -4]}>
             <Desk position={[0, 0, 0]} />
             <Chair position={[0, 0, 1]} rotation={[0, Math.PI, 0]} />
-
-            <Desk position={[0, 0, -2.5]} />
-            <Chair position={[0, 0, -1.5]} rotation={[0, Math.PI, 0]} />
-
-            <Plant position={[-2, 0, 0]} />
         </group>
 
+        {/* Another Work Zone */}
         <group position={[-6, 0, 4]}>
             <Desk position={[0, 0, 0]} />
             <Chair position={[0, 0, 1]} rotation={[0, Math.PI, 0]} />
-
-            <Desk position={[0, 0, -2.5]} />
-            <Chair position={[0, 0, -1.5]} rotation={[0, Math.PI, 0]} />
-
              <Plant position={[-2, 0, 0]} />
         </group>
 
@@ -94,8 +107,8 @@ function Scene() {
 
       </Physics>
 
-      <CharacterCreator />
-      <PointerLockControls />
+      {/* Camera Management */}
+      {isCreatorOpen ? <CreatorCamera /> : <PointerLockControls />}
 
     </>
   );
@@ -108,7 +121,26 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-        {/* Crosshair */}
+        {/* Crosshair (Hide when creator is open) */}
+        <Crosshair />
+
+        <KeyboardControls map={keyboardMap}>
+            <Canvas shadows camera={{ fov: 60 }}>
+                <Suspense fallback={null}>
+                <Scene />
+                </Suspense>
+            </Canvas>
+        </KeyboardControls>
+    </div>
+  );
+}
+
+const Crosshair = () => {
+    const isCreatorOpen = useStore((state) => state.isCreatorOpen);
+
+    if (isCreatorOpen) return null;
+
+    return (
         <div style={{
             position: 'absolute',
             top: '50%',
@@ -122,13 +154,5 @@ export default function App() {
             zIndex: 1000,
             borderRadius: '50%'
         }} />
-        <KeyboardControls map={keyboardMap}>
-            <Canvas shadows camera={{ fov: 60 }}>
-                <Suspense fallback={null}>
-                <Scene />
-                </Suspense>
-            </Canvas>
-        </KeyboardControls>
-    </div>
-  );
+    )
 }
