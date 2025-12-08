@@ -4,18 +4,20 @@ import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier
 import { Vector3 } from 'three';
 import { useKeyboardControls } from '@react-three/drei';
 import { useStore } from '../store';
+import { useGameStore } from '../games/store';
 
 export const CharacterController = (props: any) => {
   const { camera } = useThree();
   const rigidBody = useRef<RapierRigidBody>(null);
   const [, get] = useKeyboardControls();
   const isCreatorOpen = useStore((state) => state.isCreatorOpen);
+  const activeGame = useGameStore((state) => state.activeGame);
 
   // Default spawn position if not provided
   const spawnPos = props.position || [0, 5, 0];
 
   useFrame(() => {
-    if (!rigidBody.current || isCreatorOpen) return;
+    if (!rigidBody.current || isCreatorOpen || activeGame !== 'none') return;
 
     const { forward, backward, left, right, jump } = get();
 
