@@ -57,6 +57,7 @@ export const NPC = ({ data, position = [0, 5, 0] }: NPCProps) => {
       <CharacterModel
         name={data.name}
         bodyColor={data.bodyColor}
+        eyeColor={data.eyeColor}
         accessory={data.accessory}
       />
     </RigidBody>
