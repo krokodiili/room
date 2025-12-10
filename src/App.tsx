@@ -10,7 +10,9 @@ import { Plant } from './components/Plant';
 import { OfficeRoom } from './components/OfficeRoom';
 import { Decor } from './components/Decor';
 import { NPC } from './components/NPC';
+import { PinballMachine } from './components/games/PinballMachine';
 import { useStore } from './store';
+import { useGameStore } from './games/store';
 import { Suspense, useEffect } from 'react';
 import { Vector3 } from 'three';
 
@@ -21,6 +23,7 @@ const keyboardMap = [
   { name: 'left', keys: ['ArrowLeft', 'a', 'A'] },
   { name: 'right', keys: ['ArrowRight', 'd', 'D'] },
   { name: 'jump', keys: ['Space'] },
+  { name: 'interact', keys: ['e', 'E'] },
 ];
 
 function CreatorCamera() {
@@ -41,6 +44,7 @@ function CreatorCamera() {
 function Scene() {
   const npcs = useStore((state) => state.npcs);
   const isCreatorOpen = useStore((state) => state.isCreatorOpen);
+  const activeGame = useGameStore((state) => state.activeGame);
 
   return (
     <>
@@ -105,10 +109,19 @@ function Scene() {
           <NPC key={npc.id} data={npc} />
         ))}
 
+        {/* Games */}
+        <PinballMachine position={[5, 1, 0]} rotation={[0, 0, 0]} />
+
       </Physics>
 
       {/* Camera Management */}
-      {isCreatorOpen ? <CreatorCamera /> : <PointerLockControls />}
+      {isCreatorOpen ? (
+          <CreatorCamera />
+      ) : activeGame === 'pinball' ? (
+          null // PinballMachine handles its own camera view
+      ) : (
+          <PointerLockControls />
+      )}
 
     </>
   );
@@ -137,8 +150,9 @@ export default function App() {
 
 const Crosshair = () => {
     const isCreatorOpen = useStore((state) => state.isCreatorOpen);
+    const activeGame = useGameStore((state) => state.activeGame);
 
-    if (isCreatorOpen) return null;
+    if (isCreatorOpen || activeGame !== 'none') return null;
 
     return (
         <div style={{
